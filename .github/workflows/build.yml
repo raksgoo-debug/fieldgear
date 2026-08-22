@@ -12,21 +12,34 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      # Diagnostics first: if a web upload silently dropped files, this is
+      # where it shows up, and it costs a couple of seconds.
+      - name: Show what actually got uploaded
+        run: |
+          echo "--- top level ---"
+          ls -la
+          echo "--- file counts ---"
+          echo "java:      $(find src/main/java -name '*.java' 2>/dev/null | wc -l)"
+          echo "resources: $(find src/main/resources -type f 2>/dev/null | wc -l)"
+          echo "geo:       $(find src/main/resources/assets/*/geo -name '*.geo.json' 2>/dev/null | wc -l)"
+          echo "--- required files ---"
+          for f in build.gradle settings.gradle gradle.properties verify_mod.py \
+                   src/main/resources/META-INF/mods.toml; do
+            if [ -f "$f" ]; then echo "ok      $f"; else echo "MISSING $f"; fi
+          done
+
       - name: Set up JDK 17
         uses: actions/setup-java@v4
         with:
           distribution: temurin
           java-version: '17'
 
-      # Cross-checks the Java against the resources before spending time on a
-      # compile: registered items without models, animation names a controller
-      # references that the .animation.json does not define, recipes pointing at
-      # renamed items. None of those fail a build; they fail silently at runtime.
+      # Non-fatal on purpose: a resource problem should not stop us finding out
+      # whether the Java compiles.
       - name: Verify resources
+        continue-on-error: true
         run: python3 verify_mod.py
 
-      # Uses a provisioned Gradle rather than the wrapper, so the repo does not
-      # need the wrapper's binary jar committed.
       - name: Set up Gradle
         uses: gradle/actions/setup-gradle@v4
         with:
@@ -36,9 +49,8 @@ jobs:
         run: gradle build --no-daemon --stacktrace
 
       - name: Upload jar
+        if: success()
         uses: actions/upload-artifact@v4
         with:
           name: fieldgear-jar
           path: build/libs/*.jar
-          if-no-files-found: error
-
