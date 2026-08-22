@@ -61,7 +61,30 @@ def cube_matrix(rot):
     return M
 
 
-def render(cubes, tex, size=520, yaw=-32.0, pitch=14.0, light=(-0.4, 0.8, -0.55)):
+# Minecraft's own entity diffuse lighting, so these previews can be trusted as a
+# stand-in for what GeckoLib actually draws. Two fixed lights in WORLD space
+# (Lighting.DIFFUSE_LIGHT_0/1 in 1.20.1) fed through the shader's mix:
+#
+#   lightAccum = min(1, (max(0, n.L0) + max(0, n.L1)) * 0.6 + 0.4)
+#
+# It is far flatter than a single camera-relative lamp, and because both lights
+# point mostly upward it barely separates the vertical faces while pulling the
+# sloping crown facets apart. A preview lit any other way flatters or slanders
+# the model in exactly the places this project keeps arguing about.
+MC_LIGHT_0 = np.array([0.2, 1.0, -0.7])
+MC_LIGHT_1 = np.array([-0.2, 1.0, 0.7])
+MC_LIGHT_0 = MC_LIGHT_0 / np.linalg.norm(MC_LIGHT_0)
+MC_LIGHT_1 = MC_LIGHT_1 / np.linalg.norm(MC_LIGHT_1)
+
+
+def mc_shade(normal):
+    n = np.asarray(normal, float)
+    n = n / np.linalg.norm(n)
+    return min(1.0, (max(0.0, float(n @ MC_LIGHT_0))
+                     + max(0.0, float(n @ MC_LIGHT_1))) * 0.6 + 0.4)
+
+
+def render(cubes, tex, size=520, yaw=-32.0, pitch=14.0, light=None):
     cy, sy = math.cos(math.radians(yaw)), math.sin(math.radians(yaw))
     cp, sp = math.cos(math.radians(pitch)), math.sin(math.radians(pitch))
 
@@ -72,9 +95,6 @@ def render(cubes, tex, size=520, yaw=-32.0, pitch=14.0, light=(-0.4, 0.8, -0.55)
         y3 = cp * y - sp * z2
         z3 = sp * y + cp * z2
         return np.stack([x2, y3, z3], axis=-1)
-
-    L = np.array(light, dtype=float)
-    L /= np.linalg.norm(L)
 
     # world bounds -> fit
     pts = []
@@ -133,8 +153,9 @@ def render(cubes, tex, size=520, yaw=-32.0, pitch=14.0, light=(-0.4, 0.8, -0.55)
             sy_ = (size / 2 - (Pr[..., 1] - oy) * scale).astype(int)
             dz = Pr[..., 2]
 
-            nr = rot(np.array([nrm], float))[0]
-            lam = 0.42 + 0.58 * max(0.0, float(np.dot(nr / np.linalg.norm(nr), L)))
+            # shade on the WORLD normal, not the view-space one — the lights do
+            # not follow the camera in game
+            lam = mc_shade(nrm)
 
             tx = np.clip((ux + ss * uw).astype(int), 0, tex.shape[1] - 1)
             ty = np.clip((uy + tt * uh).astype(int), 0, tex.shape[0] - 1)

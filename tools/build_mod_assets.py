@@ -112,21 +112,41 @@ def main():
     for m in MODELS:
         write(f"assets/{NS}/animations/item/armor/{m}.animation.json", specific.get(m, idle))
 
-    # ---- base item model: renders the GeckoLib model instead of a sprite
+    # ---- base item model: renders the GeckoLib model instead of a sprite.
+    #
+    # These transforms assume GearItemRenderer has already pulled the geometry
+    # down onto the origin (MODEL_CENTRE_Y). Without that the helmet is about
+    # 1.8 blocks up when the rotation below is applied, the rotation swings it
+    # out of the slot, and no translation here can put it back — vanilla builds
+    # the transform as T*R*S, so the rotation happens about the origin before
+    # the translation is applied.
+    #
+    # `gui` is the one that matters: a three-quarter view, turned so the helmet
+    # is seen from its front-left rather than square on, which is what reads as
+    # a helmet at 16 pixels.
+    #
+    # Y is 145, not 215. The GUI camera looks down -z at the model's +z side,
+    # and these helmets face -z, so a rotation under 90 degrees shows the back
+    # of the helmet. Past 90 it swings the front round to face the viewer, and
+    # 145 lands it turned to its left. X 25 tips the crown toward the camera.
     write(f"assets/{NS}/models/item/gear_base.json", {
         "parent": "builtin/entity",
         "display": {
-            "thirdperson_righthand": {"translation": [0, 3, 1], "scale": [0.55, 0.55, 0.55]},
-            "thirdperson_lefthand": {"translation": [0, 3, 1], "scale": [0.55, 0.55, 0.55]},
-            "firstperson_righthand": {"rotation": [0, -90, 25],
-                                      "translation": [1.13, 3.2, 1.13],
-                                      "scale": [0.68, 0.68, 0.68]},
-            "firstperson_lefthand": {"rotation": [0, 90, -25],
-                                     "translation": [1.13, 3.2, 1.13],
-                                     "scale": [0.68, 0.68, 0.68]},
-            "ground": {"translation": [0, 2, 0], "scale": [0.5, 0.5, 0.5]},
-            "head": {"rotation": [0, 180, 0], "translation": [0, 13, 7]},
-            "fixed": {"rotation": [0, 180, 0]},
+            "gui": {"rotation": [25, 145, 0], "translation": [0, 0, 0],
+                    "scale": [0.92, 0.92, 0.92]},
+            "thirdperson_righthand": {"rotation": [12, 0, 0], "translation": [0, 3.5, 0.5],
+                                      "scale": [0.55, 0.55, 0.55]},
+            "thirdperson_lefthand": {"rotation": [12, 0, 0], "translation": [0, 3.5, 0.5],
+                                     "scale": [0.55, 0.55, 0.55]},
+            "firstperson_righthand": {"rotation": [0, -50, 0], "translation": [0.5, 3.2, 0.5],
+                                      "scale": [0.62, 0.62, 0.62]},
+            "firstperson_lefthand": {"rotation": [0, 50, 0], "translation": [0.5, 3.2, 0.5],
+                                     "scale": [0.62, 0.62, 0.62]},
+            "ground": {"translation": [0, 3, 0], "scale": [0.5, 0.5, 0.5]},
+            "head": {"rotation": [0, 180, 0], "translation": [0, 14.5, 0],
+                     "scale": [1.0, 1.0, 1.0]},
+            "fixed": {"rotation": [0, 180, 0], "translation": [0, 0, 0],
+                      "scale": [0.9, 0.9, 0.9]},
         },
     })
     for i in ITEMS:

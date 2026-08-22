@@ -179,7 +179,7 @@ def shade(c, amt):
     return tuple(clamp(x + amt) for x in c)
 
 
-FACE_BIAS = {"up": 6, "down": -10, "north": 2, "south": -4, "east": -2, "west": 2}
+FACE_BIAS = {"up": 10, "down": -12, "north": 2, "south": -4, "east": -2, "west": 2}
 
 # Smooth finishes get flat colour plus a soft top-to-bottom gradient and no
 # grain at all. Rough ones get the same gradient plus light dithering.

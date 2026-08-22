@@ -46,7 +46,11 @@ if __name__ == "__main__":
 
     for name in ("bastion", "k63", "untar"):
         geo, tex = rp.load(name)
-        cubes = rp.collect_cubes(geo)
+        # The nvg bone is hidden in game until goggles are fitted, so leave it
+        # out of the standard sheet — showing it here reads as a permanent lump
+        # across the face, which is not what the helmet looks like.
+        bones = {b["name"] for b in geo["bones"]} - {"nvg"}
+        cubes = rp.collect_cubes(geo, bones)
         rp.sheet([rp.render(cubes, tex, 460, yaw=-26, pitch=8),
                   rp.render(cubes, tex, 460, yaw=-90, pitch=8),
                   rp.render(cubes, tex, 460, yaw=170, pitch=10)],

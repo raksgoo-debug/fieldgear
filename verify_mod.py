@@ -224,6 +224,34 @@ armour_java_2 = read_java("common/item/GearArmorItem.java")
 ok("getCustomRenderer" in armour_java_2,
    "no getCustomRenderer: helmets would render as a missing sprite in hand")
 
+# gear_base needs a gui transform, or the item renders wherever the geometry
+# happens to sit rather than inside the inventory slot
+ok("gui" in base.get("display", {}),
+   "gear_base has no gui display transform: helmets render outside the slot")
+
+# GearItemRenderer pulls the geometry down onto the origin before the display
+# transform rotates it. That constant has to match the geometry it is
+# compensating for, and the geometry is regenerated independently — so check it.
+item_renderer = read_java("client/renderer/GearItemRenderer.java")
+m = re.search(r"MODEL_CENTRE_Y\s*=\s*([0-9.]+)F", item_renderer)
+ok(m is not None, "could not find MODEL_CENTRE_Y in GearItemRenderer")
+if m:
+    claimed = float(m.group(1))
+    for model in sorted(used_models):
+        geo = load(f"assets/{NS}/geo/item/armor/{model}.geo.json")["minecraft:geometry"][0]
+        ys = []
+        for b in geo["bones"]:
+            for c in b.get("cubes", []):
+                # unrotated bounds are enough here: a rotation about a pivot
+                # inside the cube moves the extremes by less than the tolerance
+                ys.append(c["origin"][1])
+                ys.append(c["origin"][1] + c["size"][1])
+        centre = (min(ys) + max(ys)) / 2
+        ok(abs(centre - claimed) < 1.0,
+           f"{model}: geometry centres at y {centre:.2f} but GearItemRenderer "
+           f"uses MODEL_CENTRE_Y {claimed:.2f} — the item would sit off-centre "
+           f"in the slot")
+
 # our plate/goggle recipes must be gated off when FP is installed, or the game
 # ends up with two parallel sets of the same thing
 for item in ("steel_plate_iii", "ceramic_plate_iv", "aramid_plate_iiia",

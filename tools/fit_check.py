@@ -71,8 +71,7 @@ def render_groups(groups, size=430, yaw=-22, pitch=4):
                 sx = ((Pr[...,0]-ox)*scale + size/2).astype(int)
                 sy_ = (size/2 - (Pr[...,1]-oy)*scale).astype(int)
                 dz = Pr[...,2]
-                nv = view(np.array([nrm]))[0]
-                lam = 0.45 + 0.55*max(0.0, float(np.dot(nv/np.linalg.norm(nv), L)))
+                lam = rp.mc_shade(nrm)   # Minecraft's own entity diffuse
                 tx = np.clip((ux + ss*uw).astype(int), 0, tex.shape[1]-1)
                 ty = np.clip((uy + tt*uh).astype(int), 0, tex.shape[0]-1)
                 texel = tex[ty, tx]*lam
@@ -85,8 +84,53 @@ def render_groups(groups, size=430, yaw=-22, pitch=4):
     bg = np.array([26,27,30], float)
     return Image.fromarray(np.where(depth[...,None]<1e8, color, bg).clip(0,255).astype(np.uint8))
 
+def inside(p, c):
+    """Is world point p inside cube c, honouring the cube's own rotation?"""
+    q = np.asarray(p, float)
+    if c.get("rotation"):
+        piv = np.array(c.get("pivot", [0, 0, 0]), float)
+        q = rp.cube_matrix(c["rotation"]).T @ (q - piv) + piv
+    o = np.array(c["origin"], float)
+    return bool(np.all(q >= o - 1e-9) and np.all(q <= o + np.array(c["size"], float) + 1e-9))
+
+
+def check_coverage(name, cubes):
+    """A vanilla head is an 8-wide box, and the shell has to be outside all of
+    it or the player's skin shows through.
+
+    The trap is the octagon: cutting the corners by c pulls the shell inside the
+    head's own corners unless 2*W - c >= 8, and a taper below the top of the
+    head does the same thing all the way round. Both have bitten this project,
+    and neither is visible in a front view — only at 45 degrees.
+
+    So: sample points just outside the head surface, all the way round and up
+    the skull, and require each one to land inside some cube of the shell.
+    """
+    bad = []
+    for k in range(16):                      # every 22.5 degrees
+        a = math.radians(k * 22.5)
+        dx, dz = math.cos(a), math.sin(a)
+        # the head is a box, so its surface radius varies with azimuth
+        r = 4.0 / max(abs(dx), abs(dz))
+        for y in np.arange(30.0, 32.0, 0.25):   # pure skull, above the face
+            p = ((r + 0.06) * dx, float(y), (r + 0.06) * dz)
+            if not any(inside(p, c) for c in cubes):
+                bad.append((round(math.degrees(a)), round(float(y), 2)))
+    if bad:
+        print(f"  {name}: SKIN SHOWS THROUGH at {len(bad)} sample points, "
+              f"e.g. {bad[:4]}")
+    else:
+        print(f"  {name}: covers the head at every azimuth")
+    return not bad
+
+
 if __name__ == "__main__":
     panels = []
+    print("head coverage (y 30.0-32.0, 16 azimuths):")
+    covered = True
+    for name in ("bastion", "k63", "untar"):
+        geo, tex = rp.load(name)
+        covered &= check_coverage(name, rp.collect_cubes(geo, {"Head"}))
     for name in ("bastion", "k63", "untar"):
         geo, tex = rp.load(name)
         groups = [(HEAD, flat((196, 160, 130))), (EYELINE, flat((200, 60, 60))),
@@ -94,3 +138,5 @@ if __name__ == "__main__":
         panels.append(render_groups(groups, 430, yaw=-22))
         panels.append(render_groups(groups, 430, yaw=-90))
     rp.sheet(panels, "preview/fit_check.png")
+    if not covered:
+        sys.exit(1)
