@@ -37,6 +37,9 @@ minecraft {
 }
 
 repositories {
+    // ForgeGradle injects the Forge and Mojang repos itself, but GeckoLib's
+    // transitive dependencies come from Maven Central, so declare it.
+    mavenCentral()
     maven {
         name = 'GeckoLib'
         url = 'https://dl.cloudsmith.io/public/geckolib3/geckolib/maven/'
