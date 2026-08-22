@@ -44,7 +44,7 @@ def rotate_bone(cubes, pivot, deg_x):
 if __name__ == "__main__":
     os.makedirs(os.path.join(HERE, "preview"), exist_ok=True)
 
-    for name in ("bastion", "zsh", "peacekeeper"):
+    for name in ("bastion", "k63", "untar"):
         geo, tex = rp.load(name)
         cubes = rp.collect_cubes(geo)
         rp.sheet([rp.render(cubes, tex, 460, yaw=-26, pitch=8),
@@ -53,12 +53,12 @@ if __name__ == "__main__":
                  os.path.join(HERE, f"preview/helmet_{name}.png"))
 
     # ZSh visor down vs visor flipped up (what helmet_open plays)
-    geo, tex = rp.load("zsh")
+    geo, tex = rp.load("k63")
     shell = rp.collect_cubes(geo, {"Head"})
     visor = rp.collect_cubes(geo, {"visor"})
     closed = shell + visor
-    opened = shell + rotate_bone(visor, [0, 26.9, -4.2], -50)
+    opened = shell + rotate_bone(visor, [0, 27.9, -4.2], -50)
     rp.sheet([rp.render(closed, tex, 460, yaw=-26, pitch=8),
               rp.render(opened, tex, 460, yaw=-26, pitch=8),
               rp.render(opened, tex, 460, yaw=-88, pitch=8)],
-             os.path.join(HERE, "preview/zsh_visor_toggle.png"))
+             os.path.join(HERE, "preview/k63_visor_toggle.png"))

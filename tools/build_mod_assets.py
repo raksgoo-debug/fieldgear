@@ -22,13 +22,9 @@ RES = os.path.join(MOD, "src/main/resources")
 
 # id -> (model, slot, display name, armour material)
 ITEMS = {
-    "bastion_helmet":     ("bastion", "HELMET", "Bastion Helmet", "COMPOSITE"),
-    "zsh_helmet":         ("zsh", "HELMET", "ZSh-1 Helmet", "STEEL"),
-    "peacekeeper_helmet": ("peacekeeper", "HELMET", "Peacekeeper Helmet", "ARAMID"),
-    "scav_helmet":        ("scav", "HELMET", "Welded Scav Helmet", "SCRAP"),
-    "scav_chestplate":    ("scav", "CHESTPLATE", "Scrap Plate Rig", "SCRAP"),
-    "scav_leggings":      ("scav_uniform", "LEGGINGS", "Scav Trousers", "SCRAP"),
-    "scav_boots":         ("scav_uniform", "BOOTS", "Scav Boots", "SCRAP"),
+    "bastion_helmet": ("bastion", "HELMET", "Bastion Helmet", "COMPOSITE"),
+    "k63_helmet":     ("k63", "HELMET", "K63 Helmet", "STEEL"),
+    "untar_helmet":   ("untar", "HELMET", "UNTAR Helmet", "ARAMID"),
 }
 
 PLATES = {
@@ -49,18 +45,14 @@ MATERIALS = {
     "steel_billet":  "Steel Billet",
 }
 
-MODELS = ["bastion", "zsh", "peacekeeper", "scav", "scav_uniform", "scav_shoulderpads"]
+MODELS = ["bastion", "k63", "untar"]
 
 # Vanilla-crafting fallbacks: shaped recipes so the mod stands alone.
 VANILLA_RECIPES = {
-    "scav_helmet":        (["III", "I I"], {"I": "minecraft:iron_ingot"}),
-    "scav_chestplate":    (["I I", "III", "III"], {"I": "minecraft:iron_ingot"}),
-    "scav_leggings":      (["III", "I I", "I I"], {"I": "fieldgear:raw_fibre"}),
-    "scav_boots":         (["I I", "I I"], {"I": "fieldgear:raw_fibre"}),
-    "zsh_helmet":         (["SSS", "S S"], {"S": "fieldgear:steel_billet"}),
-    "peacekeeper_helmet": (["AAA", "A A"], {"A": "fieldgear:woven_aramid"}),
-    "bastion_helmet":     (["ACA", "A A"], {"A": "fieldgear:woven_aramid",
-                                            "C": "fieldgear:ceramic_tile"}),
+    "k63_helmet":     (["SSS", "S S"], {"S": "fieldgear:steel_billet"}),
+    "untar_helmet":   (["AAA", "A A"], {"A": "fieldgear:woven_aramid"}),
+    "bastion_helmet": (["ACA", "A A"], {"A": "fieldgear:woven_aramid",
+                                        "C": "fieldgear:ceramic_tile"}),
     "steel_plate_iii":    (["SS", "SS"], {"S": "fieldgear:steel_billet"}),
     "ceramic_plate_iv":   (["CC", "CC"], {"C": "fieldgear:ceramic_tile"}),
     "aramid_plate_iiia":  (["AA", "AA"], {"A": "fieldgear:woven_aramid"}),
@@ -78,18 +70,13 @@ VANILLA_RECIPES = {
 
 # When Fracture Point is installed, offer its bench recipes using its materials.
 FP_BENCH = {
-    "bastion_helmet":     ([("fracturepoint:woven_kevlar", 2),
-                            ("fracturepoint:composite_material", 1),
-                            ("fracturepoint:polymer_compound", 1)], 260),
-    "zsh_helmet":         ([("fracturepoint:steel_plate", 2),
-                            ("fracturepoint:woven_kevlar", 2)], 220),
-    "peacekeeper_helmet": ([("fracturepoint:kevlar_fiber", 3),
-                            ("fracturepoint:woven_kevlar", 1)], 170),
-    "scav_helmet":        ([("minecraft:iron_ingot", 2),
-                            ("fracturepoint:raw_fiber", 2)], 120),
-    "scav_chestplate":    ([("minecraft:iron_ingot", 3),
-                            ("fracturepoint:steel_blend", 2),
-                            ("fracturepoint:raw_fiber", 3)], 200),
+    "bastion_helmet": ([("fracturepoint:woven_kevlar", 2),
+                        ("fracturepoint:composite_material", 1),
+                        ("fracturepoint:polymer_compound", 1)], 260),
+    "k63_helmet":     ([("fracturepoint:steel_plate", 2),
+                        ("fracturepoint:woven_kevlar", 2)], 220),
+    "untar_helmet":   ([("fracturepoint:kevlar_fiber", 3),
+                        ("fracturepoint:woven_kevlar", 1)], 170),
 }
 
 
@@ -121,7 +108,7 @@ def main():
     # resource from ever being a possibility.
     idle = {"format_version": "1.8.0",
             "animations": {"idle": {"loop": "loop", "animation_length": 0.1, "bones": {}}}}
-    specific = {"zsh": helmets.ZSH_ANIMATION, "bastion": helmets.BASTION_ANIMATION}
+    specific = {"k63": helmets.K63_ANIMATION, "bastion": helmets.BASTION_ANIMATION}
     for m in MODELS:
         write(f"assets/{NS}/animations/item/armor/{m}.animation.json", specific.get(m, idle))
 
@@ -179,12 +166,14 @@ def main():
     write(f"assets/{NS}/lang/en_us.json", lang)
 
     # ---- our own tags
+    # This mod ships helmets only, so the plate system needs a host chestplate
+    # from somewhere. Netherite is the same choice Fracture Point makes.
     write(f"data/{NS}/tags/items/plate_compatible.json",
-          {"replace": False, "values": [f"{NS}:scav_chestplate"]})
+          {"replace": False, "values": ["minecraft:netherite_chestplate"]})
     write(f"data/{NS}/tags/items/goggle_mount.json",
           {"replace": False, "values": [f"{NS}:bastion_helmet"]})
     write(f"data/{NS}/tags/items/has_visor.json",
-          {"replace": False, "values": [f"{NS}:zsh_helmet"]})
+          {"replace": False, "values": [f"{NS}:k63_helmet"]})
     write(f"data/{NS}/tags/items/plates.json",
           {"replace": False, "values": [f"{NS}:{p}" for p in PLATES]})
     write(f"data/{NS}/tags/items/goggles.json",
@@ -198,12 +187,8 @@ def main():
     #   can_have_goggles  -> WBArmorItem.canHaveGoggles is tag-driven, so FP
     #                        goggles mount into our helmet, its battery drains
     #                        them and its vision handler drives the effect
-    write("data/fracturepoint/tags/items/plate_compatible.json",
-          {"replace": False, "values": [f"{NS}:scav_chestplate"]})
     write("data/fracturepoint/tags/items/can_have_goggles.json",
           {"replace": False, "values": [f"{NS}:bastion_helmet"]})
-    write("data/fracturepoint/tags/items/hide_layer.json",
-          {"replace": False, "values": [f"{NS}:scav_leggings"]})
 
     # ---- recipes: vanilla shaped
     # Our own plates and goggles exist so the mod stands alone. With Fracture

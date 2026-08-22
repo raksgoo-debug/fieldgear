@@ -55,13 +55,13 @@ registered = set()
 for helper in ("simple", "plate", "goggles", "armour"):
     registered |= set(re.findall(helper + r'\("([a-z0-9_]+)"', items_java))
 registered |= set(re.findall(r'ITEMS\.register\("([a-z0-9_]+)"', items_java))
-ok(len(registered) >= 16, f"only {len(registered)} items parsed out of ModItems.java")
+ok(len(registered) >= 12, f"only {len(registered)} items parsed out of ModItems.java")
 
 # armour(...) calls carry the model basename as the 4th argument
 armour_models = dict(re.findall(
     r'armour\("([a-z0-9_]+)",\s*GearMaterial\.[A-Z]+,\s*ArmorItem\.Type\.[A-Z]+,\s*"([a-z0-9_]+)"',
     items_java))
-ok(len(armour_models) == 7, f"expected 7 armour pieces, parsed {len(armour_models)}")
+ok(len(armour_models) == 3, f"expected 3 helmets, parsed {len(armour_models)}")
 
 lang = load(f"assets/{NS}/lang/en_us.json")
 for item in sorted(registered):
@@ -203,9 +203,7 @@ ok(f'MODID = "{NS}"' in main_java, "MODID in FieldGear.java does not match the n
 # These merges are what hand FP's systems our gear, so each one must exist,
 # must not replace FP's own entries, and must name a registered item.
 FP_MERGES = {
-    "plate_compatible": f"{NS}:scav_chestplate",
     "can_have_goggles": f"{NS}:bastion_helmet",
-    "hide_layer": f"{NS}:scav_leggings",
 }
 for name, expected in FP_MERGES.items():
     path = f"{RES}/data/fracturepoint/tags/items/{name}.json"
@@ -217,6 +215,14 @@ for name, expected in FP_MERGES.items():
         ok(expected in t["values"], f"{name}.json does not contain {expected}")
         ok(expected.split(":", 1)[1] in registered,
            f"{name}.json names an unregistered item")
+
+# the in-hand 3D renderer only works if the item model parents to builtin/entity
+base = load(f"assets/{NS}/models/item/gear_base.json")
+ok(base.get("parent") == "builtin/entity",
+   "gear_base must parent to builtin/entity or getCustomRenderer is never called")
+armour_java_2 = read_java("common/item/GearArmorItem.java")
+ok("getCustomRenderer" in armour_java_2,
+   "no getCustomRenderer: helmets would render as a missing sprite in hand")
 
 # our plate/goggle recipes must be gated off when FP is installed, or the game
 # ends up with two parallel sets of the same thing

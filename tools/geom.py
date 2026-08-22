@@ -53,54 +53,9 @@ def corner_posts(bone, prefix, x0, x1, z0, z1, y, h, c, t, mat):
     return out
 
 
-def top_chamfers(bone, prefix, x0, x1, z0, z1, ytop, b, t, mat, ends=None,
-                 corner_c=None):
-    """Four slabs rotated 45 degrees off horizontal, one per top edge, so the
-    crown falls away instead of ending in a hard rim.
-
-    Each slab's top face runs from (ytop, edge + b) down to (ytop - b, edge),
-    which is why its length is b*sqrt(2): rotating that length by 45 degrees
-    lands it exactly on both endpoints.
-    """
-    L = b * R2
-    # Each slab stops short of the corners. Running them full width makes
-    # neighbouring slabs cross and poke spikes out of the crown, because at the
-    # corner one slab's top edge sits a full bevel above the other's plane.
-    e = b if ends is None else ends
-    ax0, ax1 = x0 + e, x1 - e
-    az0, az1 = z0 + e, z1 - e
-    out = [
-        # north edge (-z): pivot on the inboard top edge, front edge swings down
-        _c(bone, f"{prefix}_ch_n", [ax0, ytop - t, z0 + b - L], [ax1 - ax0, t, L], mat,
-           rot=[-45, 0, 0], pivot=[(ax0 + ax1) / 2, ytop, z0 + b]),
-        # south edge (+z)
-        _c(bone, f"{prefix}_ch_s", [ax0, ytop - t, z1 - b], [ax1 - ax0, t, L], mat,
-           rot=[45, 0, 0], pivot=[(ax0 + ax1) / 2, ytop, z1 - b]),
-        # east edge (+x)
-        _c(bone, f"{prefix}_ch_e", [x1 - b, ytop - t, az0], [L, t, az1 - az0], mat,
-           rot=[0, 0, -45], pivot=[x1 - b, ytop, (az0 + az1) / 2]),
-        # west edge (-x)
-        _c(bone, f"{prefix}_ch_w", [x0 + b - L, ytop - t, az0], [L, t, az1 - az0], mat,
-           rot=[0, 0, 45], pivot=[x0 + b, ytop, (az0 + az1) / 2]),
-    ]
-    # diagonal facets closing the four corner notches the insets leave behind,
-    # continuing the octagon up through the crown
-    # Sit them on the SAME corner chord as the octagon ring they cap. Using a
-    # smaller cut here puts the facet outboard of the octagon below it, which
-    # shows up as a nub sticking out of the crown.
-    cc = b if corner_c is None else corner_c
-    # Tucked inward and kept short: the facet is vertical while the slabs
-    # beside it slope, so sitting flush would leave a visible tab at each
-    # corner of the crown.
-    k = b * 0.4
-    out += corner_posts(bone, f"{prefix}_cnr", x0 + k, x1 - k, z0 + k, z1 - k,
-                        ytop - b, b * 0.92, cc, min(t, cc * 0.8), mat)
-    return out
-
-
 def _oct_ring(bone, prefix, x0, x1, z0, z1, y, h, corner, plate, mat):
     """One octagonal slice: two crossed boxes for the flats, four rotated posts
-    for the cut corners."""
+    for the cut corners. Only ever rotated about Y."""
     return [
         _c(bone, f"{prefix}_x", [x0, y, z0 + corner],
            [x1 - x0, h, (z1 - z0) - 2 * corner], mat),
@@ -110,48 +65,49 @@ def _oct_ring(bone, prefix, x0, x1, z0, z1, y, h, corner, plate, mat):
 
 
 def dome(bone, prefix, x0, x1, z0, z1, ybot, ytop, mat,
-         corner=1.1, bevel=1.2, plate=1.3, taper=0.45, cap_mat=None):
-    """A rounded, faceted dome.
+         rings=6, corner=1.15, curve=0.82, cap_mat=None):
+    """A rounded dome built as a stack of octagonal rings on a spherical profile.
 
-    Octagonal in plan, tapered inward as it rises, and finished with a
-    two-step chamfered crown rather than a flat plateau. Built the way a
-    Blockbench modeller would: crossed boxes make the octagon's flats, rotated
-    posts cut its corners, and rotated slabs bridge every change of section.
+    Earlier versions bridged each change of section with 45-degree slabs
+    rotated about X and Z. That produced a clean profile face-on but left a
+    notch at all four corners, where a sloping slab met a vertical corner
+    facet — visible in game as a step out of the crown.
 
-    The taper and the two crown steps are what stop it reading as a stack of
-    boxes — a single chamfer still leaves a visible rim.
+    This builds the curve out of many small steps instead. Every cube is
+    either axis-aligned or rotated about Y only, so nothing can cross at a
+    corner and there is nothing to notch. At 16 px per block a step of about a
+    third of a unit reads as a smooth surface.
     """
     cap_mat = cap_mat or mat
-    b1 = bevel * 0.62                     # lower crown step
-    b2 = bevel - b1                       # upper crown step
-    body = (ytop - b1 - b2) - ybot
-    lower_h = body * 0.55
-    upper_h = body - lower_h - taper
-    y_taper = ybot + lower_h              # where the shell starts drawing in
-    y_upper = y_taper + taper
-    y_crown = y_upper + upper_h           # top of the shell, base of the crown
+    cx = (x0 + x1) / 2.0
+    cz = (z0 + z1) / 2.0
+    half_x = (x1 - x0) / 2.0
+    half_z = (z1 - z0) / 2.0
+    height = ytop - ybot
+    out = []
 
-    out = _oct_ring(bone, f"{prefix}_lo", x0, x1, z0, z1, ybot, lower_h,
-                    corner, plate, mat)
-    # taper ring: same chamfer trick, bridging full footprint to the inset one
-    up_corner = max(0.6, corner - taper * 0.5)
-    slab = plate * 0.72
-    out += top_chamfers(bone, f"{prefix}_tp", x0, x1, z0, z1,
-                        y_upper, taper, slab, mat, corner_c=corner)
-    out += _oct_ring(bone, f"{prefix}_up", x0 + taper, x1 - taper,
-                     z0 + taper, z1 - taper, y_upper, upper_h,
-                     up_corner, plate, mat)
+    for i in range(rings):
+        # sample the profile at the middle of each ring so the steps straddle
+        # the ideal surface rather than sitting entirely inside it
+        u = (i + 0.5) / rings
+        factor = math.sqrt(max(0.04, 1.0 - (u * curve) ** 2))
+        hx = half_x * factor
+        hz = half_z * factor
+        ry = ybot + height * (i / rings)
+        rh = height / rings
+        # overlap each ring slightly into the one above so no seam can open up
+        if i < rings - 1:
+            rh *= 1.06
+        c = max(0.5, corner * factor)
+        out += _oct_ring(bone, f"{prefix}_r{i}", cx - hx, cx + hx, cz - hz, cz + hz,
+                         ry, rh, c, c * 0.85, mat)
 
-    # two-step crown
-    t0, t1 = taper, taper + b1
-    out += top_chamfers(bone, f"{prefix}_c1", x0 + t0, x1 - t0, z0 + t0, z1 - t0,
-                        y_crown + b1, b1, slab, mat, corner_c=up_corner)
-    out += top_chamfers(bone, f"{prefix}_c2", x0 + t1, x1 - t1, z0 + t1, z1 - t1,
-                        ytop, b2, slab, mat, corner_c=max(0.5, up_corner - b1 * 0.5))
-    inset = t1 + b2
+    # a small flat crown closes the top
+    top_u = 1.0
+    tf = math.sqrt(max(0.04, 1.0 - (top_u * curve) ** 2)) * 0.72
     out.append(_c(bone, f"{prefix}_cap",
-                  [x0 + inset, ytop - b2, z0 + inset],
-                  [(x1 - x0) - 2 * inset, b2, (z1 - z0) - 2 * inset], cap_mat))
+                  [cx - half_x * tf, ytop - height / rings * 0.45, cz - half_z * tf],
+                  [2 * half_x * tf, height / rings * 0.5, 2 * half_z * tf], cap_mat))
     return out
 
 

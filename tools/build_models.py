@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Fracture Point / WARBORN - "Scav" improvised raider armour set.
+Field Gear - helmet models and texture sheets.
 
 Generates GeckoLib .geo.json models plus UV-matched texture sheets.
 Geometry and UV packing are authored together so the texture can never
@@ -30,90 +30,6 @@ TEX_DIR = os.path.join(OUT, "out/assets/fracturepoint/textures/item/armor")
 # (bone, name, origin[x,y,z], size[w,h,d], material)
 # World space: feet at y=0, head cube spans y 24..32, body 12..24, z -2..2.
 
-SCAV = geom.dome("Head", "shell", -4.30, 4.30, -4.30, 4.30, 26.20, 31.95, "steel",
-                 corner=1.10, bevel=1.25, plate=1.30) + [
-    # --- helmet: welded steel pot, scrap patches, welding visor -------------
-    ("Head", "shell_skirt",  [-4.50, 25.50, -4.50], [9.00, 1.00, 9.00], "steel_dark"),
-    geom.tilted("Head", "brim", [-4.10, 26.20, -5.35], [8.20, 1.05, 1.15], "steel_dark",
-                rot=[-8, 0, 0]),
-    geom.tilted("Head", "patch_l", [-4.75, 27.60, -2.40], [0.70, 2.60, 3.80], "rust",
-                rot=[0, 0, 7]),
-    geom.tilted("Head", "patch_r", [4.05, 28.10, -1.20], [0.70, 2.10, 3.00], "rust",
-                rot=[0, 0, -5]),
-    ("Head", "patch_top",    [-2.40, 30.80, -1.20], [3.60, 0.65, 4.00], "rust"),
-    geom.tilted("Head", "visor_frame", [-3.60, 24.60, -5.15], [7.20, 2.90, 0.70],
-                "steel_dark", rot=[6, 0, 0]),
-    geom.tilted("Head", "visor_glass", [-2.60, 25.20, -5.45], [5.20, 1.70, 0.42],
-                "glass", rot=[6, 0, 0]),
-    geom.tilted("Head", "earcup_r", [-4.95, 26.00, -1.70], [0.80, 2.40, 3.00], "rubber",
-                rot=[0, 0, 6]),
-    geom.tilted("Head", "earcup_l", [4.15, 26.00, -1.70], [0.80, 2.40, 3.00], "rubber",
-                rot=[0, 0, -6]),
-    geom.tilted("Head", "rebar_spike", [1.10, 31.60, -0.40], [0.50, 2.90, 0.50], "rust",
-                rot=[-9, 0, 6]),
-    ("Head", "chin_strap",   [-4.25, 24.15, -3.10], [8.50, 0.65, 6.30], "leather"),
-    ("Head", "neck_flap",    [-4.20, 24.30,  3.10], [8.40, 2.20, 1.10], "leather"),
-
-    # --- chest rig: canvas vest, welded scrap plates, pouches ---------------
-    ("Body", "vest_lower",   [-4.45, 12.60, -2.65], [8.90, 4.20, 5.30], "canvas_dark"),
-    ("Body", "vest_upper",   [-4.25, 16.60, -2.50], [8.50, 5.80, 5.00], "canvas"),
-    ("Body", "belt",         [-4.55, 12.30, -2.75], [9.10, 1.10, 5.50], "leather"),
-    ("Body", "collar",       [-3.20, 21.90, -2.30], [6.40, 1.50, 4.60], "cloth_dark"),
-    ("Body", "plate_front",  [-3.40, 16.10, -3.15], [6.80, 5.60, 0.70], "steel"),
-    ("Body", "plate_patch",  [-1.20, 18.40, -3.55], [3.80, 3.00, 0.50], "rust"),
-    ("Body", "plate_rivets", [-3.60, 15.60, -3.05], [7.20, 0.60, 0.55], "steel_dark"),
-    ("Body", "plate_back",   [-3.20, 16.30,  2.45], [6.40, 5.20, 0.65], "steel"),
-    ("Body", "weld_side",    [-4.70, 17.20, -1.40], [0.55, 2.80, 2.80], "rust"),
-    ("Body", "strap_r",      [-3.60, 21.60, -2.85], [1.80, 2.60, 0.65], "leather"),
-    ("Body", "strap_l",      [ 1.80, 21.60, -2.85], [1.80, 2.60, 0.65], "leather"),
-    ("Body", "shoulder_r",   [-3.75, 22.30, -2.55], [2.00, 0.75, 5.10], "leather"),
-    ("Body", "shoulder_l",   [ 1.75, 22.30, -2.55], [2.00, 0.75, 5.10], "leather"),
-    ("Body", "pouch_1",      [-3.95, 13.10, -4.05], [2.60, 2.80, 1.50], "canvas"),
-    ("Body", "flap_1",       [-4.05, 15.70, -4.15], [2.80, 0.70, 1.70], "leather"),
-    ("Body", "pouch_2",      [-1.00, 12.90, -4.05], [2.40, 3.10, 1.50], "tarp"),
-    ("Body", "flap_2",       [-1.10, 15.80, -4.15], [2.60, 0.70, 1.70], "leather"),
-    ("Body", "pouch_3",      [ 1.90, 13.20, -4.00], [2.30, 2.60, 1.45], "canvas"),
-    ("Body", "flap_3",       [ 1.80, 15.60, -4.10], [2.50, 0.70, 1.65], "leather"),
-    ("Body", "tarp_roll",    [-3.10, 20.30,  2.40], [6.20, 1.80, 1.80], "tarp"),
-    ("Body", "canteen",      [ 1.70, 12.90,  2.55], [1.70, 2.70, 1.80], "steel_dark"),
-    ("Body", "back_strap",   [-3.30, 16.20,  2.95], [6.60, 0.60, 0.50], "leather"),
-    ("Body", "plate_seam",   [-3.40, 18.85, -3.25], [6.80, 0.45, 0.28], "steel_dark"),
-    ("Body", "radio",        [ 1.95, 19.30, -3.55], [1.60, 2.20, 0.80], "steel_dark"),
-    ("Body", "antenna",      [ 2.55, 21.40, -3.30], [0.35, 2.20, 0.35], "rubber"),
-]
-
-UNIFORM = [
-    ("armorBody",      "torso",   [-4.05, 12.05, -2.05], [8.10, 12.00, 4.10], "cloth"),
-    ("armorBody",      "collar",  [-3.30, 21.60, -2.20], [6.60,  1.80, 4.40], "cloth_dark"),
-    ("armorRightArm",  "sleeve",  [-8.05, 12.05, -2.05], [4.10, 11.00, 4.10], "cloth"),
-    ("armorRightArm",  "cuff",    [-8.15, 12.00, -2.15], [4.30,  2.20, 4.30], "leather"),
-    ("armorLeftArm",   "sleeve",  [ 3.95, 12.05, -2.05], [4.10, 11.00, 4.10], "cloth"),
-    ("armorLeftArm",   "cuff",    [ 3.85, 12.00, -2.15], [4.30,  2.20, 4.30], "leather"),
-    ("armorRightLeg",  "trouser", [-4.05,  3.00, -2.05], [4.10,  9.10, 4.10], "cloth"),
-    ("armorRightLeg",  "knee",    [-4.15,  5.40, -2.50], [4.30,  2.60, 0.60], "rubber"),
-    ("armorLeftLeg",   "trouser", [-0.05,  3.00, -2.05], [4.10,  9.10, 4.10], "cloth"),
-    ("armorLeftLeg",   "knee",    [-0.15,  5.40, -2.50], [4.30,  2.60, 0.60], "rubber"),
-    ("armorRightBoot", "boot",    [-4.10,  0.00, -2.10], [4.20,  3.20, 4.20], "leather"),
-    ("armorRightBoot", "sole",    [-4.20, -0.02, -2.20], [4.40,  0.90, 4.60], "rubber"),
-    ("armorLeftBoot",  "boot",    [-0.10,  0.00, -2.10], [4.20,  3.20, 4.20], "leather"),
-    ("armorLeftBoot",  "sole",    [-0.20, -0.02, -2.20], [4.40,  0.90, 4.60], "rubber"),
-]
-
-SHOULDERPADS = [
-    # right arm occupies x -8..-4; pad sits on the shoulder crown (~y24)
-    ("armorRightArm", "cap",     [-8.45, 23.00, -2.45], [4.90, 1.60, 4.90], "steel"),
-    ("armorRightArm", "strap",   [-8.25, 22.35, -2.25], [4.50, 0.70, 4.50], "leather"),
-    ("armorRightArm", "skirt",   [-8.60, 20.60, -2.35], [5.20, 1.90, 4.70], "steel"),
-    ("armorRightArm", "lip",     [-8.55, 20.20, -2.25], [5.10, 0.55, 4.50], "steel_dark"),
-    ("armorRightArm", "patch",   [-8.75, 20.90, -1.30], [0.55, 1.45, 2.60], "rust"),
-    # left arm occupies x 4..8
-    ("armorLeftArm",  "cap",     [ 3.55, 23.00, -2.45], [4.90, 1.60, 4.90], "steel"),
-    ("armorLeftArm",  "strap",   [ 3.75, 22.35, -2.25], [4.50, 0.70, 4.50], "leather"),
-    ("armorLeftArm",  "skirt",   [ 3.40, 20.60, -2.35], [5.20, 1.90, 4.70], "steel"),
-    ("armorLeftArm",  "lip",     [ 3.45, 20.20, -2.25], [5.10, 0.55, 4.50], "steel_dark"),
-    ("armorLeftArm",  "patch",   [ 8.20, 20.90, -1.30], [0.55, 1.45, 2.60], "rust"),
-]
-
 # --------------------------------------------------------------- skeletons ---
 
 BASE_BONES = [
@@ -132,11 +48,6 @@ BASE_BONES = [
     ("armorLeftLeg",   "bipedLeftLeg",   [2, 12, 0]),
     ("armorLeftBoot",  "bipedLeftLeg",   [2, 12, 0]),
 ]
-
-# Extra grouping bones used by the main set, mirroring ratnik.geo.json.
-EXTRA_BONES = {
-    "scav": [("Head", "armorHead", [0, 24, 0]), ("Body", "armorBody", [0, 24, 0])],
-}
 
 # ------------------------------------------------------------- uv packing ----
 
@@ -268,7 +179,7 @@ def shade(c, amt):
     return tuple(clamp(x + amt) for x in c)
 
 
-FACE_BIAS = {"up": 10, "down": -12, "north": 2, "south": -4, "east": -2, "west": 2}
+FACE_BIAS = {"up": 6, "down": -10, "north": 2, "south": -4, "east": -2, "west": 2}
 
 # Smooth finishes get flat colour plus a soft top-to-bottom gradient and no
 # grain at all. Rough ones get the same gradient plus light dithering.
@@ -442,10 +353,6 @@ def build(name, cubes, tex_size, seed, extra_bones=()):
 
 
 if __name__ == "__main__":
-    build("scav", SCAV, 256, 20260822, EXTRA_BONES["scav"])
-    build("scav_uniform", UNIFORM, 128, 7731)
-    build("scav_shoulderpads", SHOULDERPADS, 128, 4412)
-
     import helmets
     for name, (cubes, size, seed, extra) in helmets.HELMET_MODELS.items():
         build(name, cubes, size, seed, extra)
