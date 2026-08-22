@@ -16,7 +16,6 @@ import net.minecraft.world.item.TooltipFlag;
 import net.minecraft.world.level.Level;
 import net.minecraftforge.client.extensions.common.IClientItemExtensions;
 import software.bernie.geckolib.animatable.GeoItem;
-import software.bernie.geckolib.animatable.client.RenderProvider;
 import software.bernie.geckolib.constant.DataTickets;
 import software.bernie.geckolib.core.animatable.instance.AnimatableInstanceCache;
 import software.bernie.geckolib.core.animation.AnimatableManager;
@@ -24,13 +23,11 @@ import software.bernie.geckolib.core.animation.AnimationController;
 import software.bernie.geckolib.core.animation.AnimationState;
 import software.bernie.geckolib.core.animation.RawAnimation;
 import software.bernie.geckolib.core.object.PlayState;
-import software.bernie.geckolib.renderer.GeoArmorRenderer;
 import software.bernie.geckolib.util.GeckoLibUtil;
 
 import javax.annotation.Nullable;
 import java.util.List;
 import java.util.function.Consumer;
-import java.util.function.Supplier;
 
 /**
  * A piece of armour rendered from a GeckoLib model rather than a flat texture
@@ -39,6 +36,11 @@ import java.util.function.Supplier;
  * All the per-piece variation — which .geo.json to draw, whether the visor
  * moves, whether goggles can be fitted — is data on the item instance or on the
  * stack's NBT, so one class covers the whole set.
+ *
+ * The armour model is hooked through Forge's own {@code IClientItemExtensions}
+ * rather than GeckoLib's RenderProvider. GeckoLib 4.8 has no
+ * {@code animatable.client.RenderProvider} and no {@code GeoItem.makeRenderer};
+ * this is the route Fracture Point uses against the same GeckoLib version.
  */
 public class GearArmorItem extends ArmorItem implements GeoItem {
 
@@ -52,11 +54,10 @@ public class GearArmorItem extends ArmorItem implements GeoItem {
             RawAnimation.begin().thenPlayAndHold("nvg_up");
 
     private final AnimatableInstanceCache cache = GeckoLibUtil.createInstanceCache(this);
-    private final Supplier<Object> renderProvider = GeoItem.makeRenderer(this);
 
     /** Basename of the .geo.json / .png under geo|textures/item/armor/. */
     private final String modelName;
-    /** Whether this piece ships an .animation.json at all. */
+    /** Whether this piece ships an .animation.json with real movement in it. */
     private final boolean animated;
 
     public GearArmorItem(ArmorMaterial material, Type type, Properties properties,
@@ -77,9 +78,9 @@ public class GearArmorItem extends ArmorItem implements GeoItem {
     // ------------------------------------------------------------ rendering --
 
     @Override
-    public void createRenderer(Consumer<Object> consumer) {
-        consumer.accept(new RenderProvider() {
-            private GeoArmorRenderer<?> renderer;
+    public void initializeClient(Consumer<IClientItemExtensions> consumer) {
+        consumer.accept(new IClientItemExtensions() {
+            private GearArmorRenderer renderer;
 
             @Override
             public HumanoidModel<?> getHumanoidArmorModel(LivingEntity living, ItemStack stack,
@@ -90,27 +91,6 @@ public class GearArmorItem extends ArmorItem implements GeoItem {
                 }
                 this.renderer.prepForRender(living, stack, slot, original);
                 return this.renderer;
-            }
-        });
-    }
-
-    @Override
-    public Supplier<Object> getRenderProvider() {
-        return this.renderProvider;
-    }
-
-    @Override
-    public void initializeClient(Consumer<IClientItemExtensions> consumer) {
-        consumer.accept(new IClientItemExtensions() {
-            @Override
-            public HumanoidModel<?> getHumanoidArmorModel(LivingEntity living, ItemStack stack,
-                                                          EquipmentSlot slot,
-                                                          HumanoidModel<?> original) {
-                Object provider = GearArmorItem.this.getRenderProvider().get();
-                if (provider instanceof RenderProvider rp) {
-                    return rp.getHumanoidArmorModel(living, stack, slot, original);
-                }
-                return original;
             }
         });
     }
