@@ -1,0 +1,24 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    "CC",
+    "CC"
+  ],
+  "key": {
+    "C": {
+      "item": "fieldgear:ceramic_tile"
+    }
+  },
+  "result": {
+    "item": "fieldgear:ceramic_plate_iv"
+  },
+  "conditions": [
+    {
+      "type": "forge:not",
+      "value": {
+        "type": "forge:mod_loaded",
+        "modid": "fracturepoint"
+      }
+    }
+  ]
+}

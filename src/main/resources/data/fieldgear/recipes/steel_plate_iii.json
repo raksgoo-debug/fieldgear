@@ -1,0 +1,24 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    "SS",
+    "SS"
+  ],
+  "key": {
+    "S": {
+      "item": "fieldgear:steel_billet"
+    }
+  },
+  "result": {
+    "item": "fieldgear:steel_plate_iii"
+  },
+  "conditions": [
+    {
+      "type": "forge:not",
+      "value": {
+        "type": "forge:mod_loaded",
+        "modid": "fracturepoint"
+      }
+    }
+  ]
+}

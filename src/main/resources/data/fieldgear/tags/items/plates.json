@@ -1,0 +1,8 @@
+{
+  "replace": false,
+  "values": [
+    "fieldgear:steel_plate_iii",
+    "fieldgear:ceramic_plate_iv",
+    "fieldgear:aramid_plate_iiia"
+  ]
+}

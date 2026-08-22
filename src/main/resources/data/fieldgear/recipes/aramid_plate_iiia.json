@@ -1,0 +1,24 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    "AA",
+    "AA"
+  ],
+  "key": {
+    "A": {
+      "item": "fieldgear:woven_aramid"
+    }
+  },
+  "result": {
+    "item": "fieldgear:aramid_plate_iiia"
+  },
+  "conditions": [
+    {
+      "type": "forge:not",
+      "value": {
+        "type": "forge:mod_loaded",
+        "modid": "fracturepoint"
+      }
+    }
+  ]
+}

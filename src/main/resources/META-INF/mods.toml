@@ -1,0 +1,45 @@
+modLoader="javafml"
+loaderVersion="${loader_version_range}"
+license="${mod_license}"
+issueTrackerURL=""
+
+[[mods]]
+modId="${mod_id}"
+version="${mod_version}"
+displayName="${mod_name}"
+authors="${mod_authors}"
+description='''
+${mod_description}
+'''
+
+[[dependencies.${mod_id}]]
+    modId="forge"
+    mandatory=true
+    versionRange="${forge_version_range}"
+    ordering="NONE"
+    side="BOTH"
+
+[[dependencies.${mod_id}]]
+    modId="minecraft"
+    mandatory=true
+    versionRange="${minecraft_version_range}"
+    ordering="NONE"
+    side="BOTH"
+
+# GeckoLib draws the 3D armour models and plays the visor / NVG animations.
+[[dependencies.${mod_id}]]
+    modId="geckolib"
+    mandatory=true
+    versionRange="[4.8,)"
+    ordering="NONE"
+    side="BOTH"
+
+# Soft dependency. With Fracture Point present, this mod's ballistics bench
+# recipes load (gated by a forge:mod_loaded condition) and its gear joins FP's
+# layer-hiding tag. Without it, everything falls back to vanilla crafting.
+[[dependencies.${mod_id}]]
+    modId="fracturepoint"
+    mandatory=false
+    versionRange="[3.0,)"
+    ordering="AFTER"
+    side="BOTH"

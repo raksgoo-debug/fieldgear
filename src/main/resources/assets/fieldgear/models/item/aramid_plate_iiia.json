@@ -1,0 +1,6 @@
+{
+  "parent": "item/generated",
+  "textures": {
+    "layer0": "fieldgear:item/aramid_plate_iiia"
+  }
+}
