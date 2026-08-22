@@ -1,0 +1,22 @@
+# build output
+build/
+.gradle/
+run/
+src/generated/
+
+# optional local dependency drop
+libs/*.jar
+
+# generator intermediates
+tools/out/
+tools/preview/
+tools/__pycache__/
+__pycache__/
+
+# IDE
+*.iml
+.idea/
+.eclipse/
+.settings/
+.classpath
+.project
