@@ -1,0 +1,22 @@
+{
+  "type": "fracturepoint:ballistics_bench",
+  "conditions": [
+    {
+      "type": "forge:mod_loaded",
+      "modid": "fracturepoint"
+    }
+  ],
+  "ingredients": [
+    {
+      "item": "fracturepoint:kevlar_fiber",
+      "count": 3
+    },
+    {
+      "item": "fracturepoint:woven_kevlar"
+    }
+  ],
+  "result": {
+    "item": "fieldgear:untar_helmet"
+  },
+  "processTime": 170
+}

@@ -19,9 +19,6 @@ import java.util.Map;
  */
 public enum GearMaterial implements ArmorMaterial {
 
-    SCRAP("scrap", 15, protection(2, 5, 4, 1), 9, 0.0F, 0.0F,
-            SoundEvents.ARMOR_EQUIP_IRON, () -> Ingredient.of(Items.IRON_INGOT)),
-
     STEEL("steel", 22, protection(3, 6, 5, 2), 9, 1.0F, 0.0F,
             SoundEvents.ARMOR_EQUIP_IRON, () -> Ingredient.of(Items.IRON_INGOT)),
 

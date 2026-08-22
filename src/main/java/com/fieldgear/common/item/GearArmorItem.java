@@ -1,10 +1,12 @@
 package com.fieldgear.common.item;
 
 import com.fieldgear.client.renderer.GearArmorRenderer;
+import com.fieldgear.client.renderer.GearItemRenderer;
 import com.fieldgear.common.gear.GoggleSystem;
 import com.fieldgear.common.gear.PlateSystem;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.model.HumanoidModel;
+import net.minecraft.client.renderer.BlockEntityWithoutLevelRenderer;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.LivingEntity;
@@ -81,7 +83,9 @@ public class GearArmorItem extends ArmorItem implements GeoItem {
     public void initializeClient(Consumer<IClientItemExtensions> consumer) {
         consumer.accept(new IClientItemExtensions() {
             private GearArmorRenderer renderer;
+            private GearItemRenderer itemRenderer;
 
+            /** Worn on a body. */
             @Override
             public HumanoidModel<?> getHumanoidArmorModel(LivingEntity living, ItemStack stack,
                                                           EquipmentSlot slot,
@@ -91,6 +95,15 @@ public class GearArmorItem extends ArmorItem implements GeoItem {
                 }
                 this.renderer.prepForRender(living, stack, slot, original);
                 return this.renderer;
+            }
+
+            /** Held, dropped, or in an item frame — the 3D model, not a sprite. */
+            @Override
+            public BlockEntityWithoutLevelRenderer getCustomRenderer() {
+                if (this.itemRenderer == null) {
+                    this.itemRenderer = new GearItemRenderer();
+                }
+                return this.itemRenderer;
             }
         });
     }

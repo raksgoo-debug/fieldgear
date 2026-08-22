@@ -1,0 +1,25 @@
+{
+  "type": "fracturepoint:ballistics_bench",
+  "conditions": [
+    {
+      "type": "forge:mod_loaded",
+      "modid": "fracturepoint"
+    }
+  ],
+  "ingredients": [
+    {
+      "item": "fracturepoint:woven_kevlar",
+      "count": 2
+    },
+    {
+      "item": "fracturepoint:composite_material"
+    },
+    {
+      "item": "fracturepoint:polymer_compound"
+    }
+  ],
+  "result": {
+    "item": "fieldgear:bastion_helmet"
+  },
+  "processTime": 260
+}

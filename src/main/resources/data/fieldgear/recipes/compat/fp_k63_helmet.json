@@ -1,0 +1,23 @@
+{
+  "type": "fracturepoint:ballistics_bench",
+  "conditions": [
+    {
+      "type": "forge:mod_loaded",
+      "modid": "fracturepoint"
+    }
+  ],
+  "ingredients": [
+    {
+      "item": "fracturepoint:steel_plate",
+      "count": 2
+    },
+    {
+      "item": "fracturepoint:woven_kevlar",
+      "count": 2
+    }
+  ],
+  "result": {
+    "item": "fieldgear:k63_helmet"
+  },
+  "processTime": 220
+}

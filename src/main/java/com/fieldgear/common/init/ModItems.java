@@ -59,18 +59,10 @@ public final class ModItems {
 
     public static final RegistryObject<GearArmorItem> BASTION_HELMET =
             armour("bastion_helmet", GearMaterial.COMPOSITE, ArmorItem.Type.HELMET, "bastion", true);
-    public static final RegistryObject<GearArmorItem> ZSH_HELMET =
-            armour("zsh_helmet", GearMaterial.STEEL, ArmorItem.Type.HELMET, "zsh", true);
-    public static final RegistryObject<GearArmorItem> PEACEKEEPER_HELMET =
-            armour("peacekeeper_helmet", GearMaterial.ARAMID, ArmorItem.Type.HELMET, "peacekeeper", false);
-    public static final RegistryObject<GearArmorItem> SCAV_HELMET =
-            armour("scav_helmet", GearMaterial.SCRAP, ArmorItem.Type.HELMET, "scav", false);
-    public static final RegistryObject<GearArmorItem> SCAV_CHESTPLATE =
-            armour("scav_chestplate", GearMaterial.SCRAP, ArmorItem.Type.CHESTPLATE, "scav", false);
-    public static final RegistryObject<GearArmorItem> SCAV_LEGGINGS =
-            armour("scav_leggings", GearMaterial.SCRAP, ArmorItem.Type.LEGGINGS, "scav_uniform", false);
-    public static final RegistryObject<GearArmorItem> SCAV_BOOTS =
-            armour("scav_boots", GearMaterial.SCRAP, ArmorItem.Type.BOOTS, "scav_uniform", false);
+    public static final RegistryObject<GearArmorItem> K63_HELMET =
+            armour("k63_helmet", GearMaterial.STEEL, ArmorItem.Type.HELMET, "k63", true);
+    public static final RegistryObject<GearArmorItem> UNTAR_HELMET =
+            armour("untar_helmet", GearMaterial.ARAMID, ArmorItem.Type.HELMET, "untar", false);
 
     // ------------------------------------------------------------------ tab --
 
