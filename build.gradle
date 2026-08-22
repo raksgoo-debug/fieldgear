@@ -29,9 +29,12 @@ minecraft {
             args '--nogui'
         }
         data {
-            programArguments.addAll '--mod', mod_id, '--all',
-                    '--output', file('src/generated/resources/').getAbsolutePath(),
-                    '--existing', file('src/main/resources/').getAbsolutePath()
+            // ForgeGradle 6.0.x takes 'args' here. 'programArguments' only
+            // exists from 6.1 onward (the 1.20.4+ MDK), and the version range
+            // above resolves 6.0.x for 1.20.1.
+            args '--mod', mod_id, '--all',
+                    '--output', file('src/generated/resources/'),
+                    '--existing', file('src/main/resources/')
         }
     }
 }
