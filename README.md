@@ -61,6 +61,16 @@ Two other data routes are also in use:
   the table above work at all — `data/fracturepoint/tags/` files in *this* jar
   add to FP's tags without touching its source.
 
+## Which build am I running?
+
+The mod version is in `gradle.properties` (`mod_version`) and shows on the Mods
+screen in game. Bump it whenever the models change — resources live in the jar,
+so editing the repo changes nothing until the jar is rebuilt and reinstalled,
+and a stale jar is otherwise indistinguishable from a fix that did not work.
+
+`1.1.0` is the first build with the corrected crown (no corner wings, flared
+dome). If the Mods screen shows `1.0.0`, the jar predates it.
+
 ## Building
 
 ```bash
@@ -104,9 +114,10 @@ at whatever rig you like.
 
 These are the standalone implementations, used when Fracture Point is absent.
 
-**Shell shapes.** Each dome is octagonal in plan, tapers as it rises, and ends
-in a two-step chamfered crown — 45-degree slabs rotated about X and Z bridging
-each change of section.
+**Shell shapes.** Each dome is octagonal in plan and ends in a two-step
+chamfered crown — rotated slabs bridging each change of section. The wall runs
+straight to the top of the head (a taper below y 32 uncovers the skull), so all
+the rounding lives in the crown above it.
 
 The crown corners are the part worth explaining. Where two sloping slabs meet,
 something has to close the gap. Filling it with a vertical cube leaves a point
@@ -127,9 +138,21 @@ and *that* is what put the row of little spikes along the crown. Both earlier
 attempts here were wrong in that one term.
 
 A true octagonal chamfer narrows as it rises, so the exact patch is a trapezoid
-and a cube cannot be one. The plate is widened past the chord instead, which
-moves the leftover shortfall to the outer rim where the ring's own corner post
-is already standing, rather than leaving a notch on the crown silhouette.
+and a cube cannot be one. Do **not** widen the plate past the chord to close the
+leftover notch: the extra length runs *along* the chord, so both ends push out
+beyond the octagon and stand proud of the shell as pointed wings on the crown's
+top corners. That was invisible in a 450-pixel preview and the loudest feature
+of the helmet at the ~30 pixels the game actually draws. The slack is taken up
+instead by insetting the chamfer slab ends by the corner cut *plus* the ring's
+own inset, which moves the shortfall to the outer rim where the vertical wall
+below hides it.
+
+The other half of the crown is `flare` — how far each step draws in per unit it
+rises. At 45 degrees a 1.4-unit crown draws in only 1.4 on a 9-wide shell, which
+is a plateau with a bevelled edge; the silhouette of a dome comes from how small
+the top gets, and a helmet worn high has no height to spend. `top_chamfers`
+therefore takes `rise` separately from the horizontal inset, and the corner
+normal generalises to `(sx*rise, 2b, sz*rise)`.
 
 Getting that orientation needs a multi-axis rotation, and the angles are not
 round numbers — `euler_xyz_from_basis` computes them from the target basis
