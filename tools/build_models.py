@@ -353,6 +353,15 @@ def build(name, cubes, tex_size, seed, extra_bones=()):
 
 
 if __name__ == "__main__":
+    import shutil
+
     import helmets
+
+    # Wipe the staging tree first. Without this it accumulates output for every
+    # model that has ever existed — renaming zsh to k63 or dropping the scav set
+    # leaves the old files sitting here looking current, and anything that
+    # copies the directory wholesale (a zip, a sync) picks them up again.
+    shutil.rmtree(os.path.join(OUT, "out"), ignore_errors=True)
+
     for name, (cubes, size, seed, extra) in helmets.HELMET_MODELS.items():
         build(name, cubes, size, seed, extra)

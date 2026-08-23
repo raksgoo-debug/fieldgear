@@ -54,44 +54,55 @@ def corner_posts(bone, prefix, x0, x1, z0, z1, y, h, c, t, mat):
 
 
 def top_chamfers(bone, prefix, x0, x1, z0, z1, ytop, b, t, mat, ends=None,
-                 corner_c=None):
-    """Four slabs rotated 45 degrees off horizontal, one per top edge, so the
-    crown falls away instead of ending in a hard rim.
+                 corner_c=None, rise=None):
+    """Four sloping slabs, one per top edge, so the crown falls away instead of
+    ending in a hard rim.
 
-    Each slab's top face runs from (ytop, edge + b) down to (ytop - b, edge),
-    which is why its length is b*sqrt(2): rotating that length by 45 degrees
-    lands it exactly on both endpoints.
+    Each slab's top face runs from (ytop, edge + b) down to (ytop - rise, edge),
+    so its length is hypot(b, rise) and its tilt is atan(rise / b).
+
+    `rise` defaults to `b`, the 45-degree case. Setting it *smaller* than `b`
+    is what makes a crown read as a dome rather than a plateau at gameplay
+    scale: the silhouette is set by how far the top draws in, not by how tall
+    the chamfer is, and a short helmet has no height to spend.
     """
-    L = b * R2
+    rise = b if rise is None else rise
+    L = math.hypot(b, rise)
+    ang = math.degrees(math.atan2(rise, b))
     # Each slab stops short of the corners. Running them full width makes
-    # neighbouring slabs cross and poke spikes out of the crown, because at the
-    # corner one slab's top edge sits a full bevel above the other's plane.
-    # Stopping exactly at the octagon's corner cut is what lets the corner
-    # facet below meet them edge to edge instead of overlapping or gapping.
+    # neighbouring slabs cross and poke spikes out of the crown.
+    #
+    # Inset by the corner cut *plus* the inset the ring makes as it rises. The
+    # slab is a rectangle but the octagon it caps narrows with height, so ends
+    # inset by only the corner cut sit inside the footprint at the bottom of
+    # the chamfer and outside it at the top — poking out as small wings on the
+    # crown's corners. Paying the inset up front trades that for a shortfall at
+    # the outer rim, which lands against the vertical wall below and hides.
     cc = corner_c if corner_c else b * 0.75
-    e = cc if ends is None else ends
+    e = (cc + b) if ends is None else ends
     ax0, ax1 = x0 + e, x1 - e
     az0, az1 = z0 + e, z1 - e
     out = [
         # north edge (-z): pivot on the inboard top edge, front edge swings down
         _c(bone, f"{prefix}_ch_n", [ax0, ytop - t, z0 + b - L], [ax1 - ax0, t, L], mat,
-           rot=[-45, 0, 0], pivot=[(ax0 + ax1) / 2, ytop, z0 + b]),
+           rot=[-ang, 0, 0], pivot=[(ax0 + ax1) / 2, ytop, z0 + b]),
         # south edge (+z)
         _c(bone, f"{prefix}_ch_s", [ax0, ytop - t, z1 - b], [ax1 - ax0, t, L], mat,
-           rot=[45, 0, 0], pivot=[(ax0 + ax1) / 2, ytop, z1 - b]),
+           rot=[ang, 0, 0], pivot=[(ax0 + ax1) / 2, ytop, z1 - b]),
         # east edge (+x)
         _c(bone, f"{prefix}_ch_e", [x1 - b, ytop - t, az0], [L, t, az1 - az0], mat,
-           rot=[0, 0, -45], pivot=[x1 - b, ytop, (az0 + az1) / 2]),
+           rot=[0, 0, -ang], pivot=[x1 - b, ytop, (az0 + az1) / 2]),
         # west edge (-x)
         _c(bone, f"{prefix}_ch_w", [x0 + b - L, ytop - t, az0], [L, t, az1 - az0], mat,
-           rot=[0, 0, 45], pivot=[x0 + b, ytop, (az0 + az1) / 2]),
+           rot=[0, 0, ang], pivot=[x0 + b, ytop, (az0 + az1) / 2]),
     ]
     # diagonal facets closing the four corner notches the insets leave behind,
     # continuing the octagon up through the crown
     # Sit them on the SAME corner chord as the octagon ring they cap. Using a
     # smaller cut here puts the facet outboard of the octagon below it, which
     # shows up as a nub sticking out of the crown.
-    out += corner_facets(bone, f"{prefix}_cnr", x0, x1, z0, z1, ytop, b, t, mat, cc)
+    out += corner_facets(bone, f"{prefix}_cnr", x0, x1, z0, z1, ytop, b, t, mat,
+                         cc, rise)
     return out
 
 
@@ -112,7 +123,7 @@ def euler_xyz_from_basis(bx, by, bz):
     return [math.degrees(rx), math.degrees(ry), math.degrees(rz)]
 
 
-def corner_facets(bone, prefix, x0, x1, z0, z1, ytop, b, t, mat, c):
+def corner_facets(bone, prefix, x0, x1, z0, z1, ytop, b, t, mat, c, rise=None):
     """Four sloping facets closing the corners of a chamfer ring.
 
     The ring below is an octagon: each corner is already a flat cut of chord
@@ -122,24 +133,25 @@ def corner_facets(bone, prefix, x0, x1, z0, z1, ytop, b, t, mat, c):
     point — sizing these by eye is what left the corners looking like wedges
     stuck on top of the crown.
 
-    The surface itself lies at 35.26 degrees off horizontal — the ring insets by
-    b on *each* horizontal axis, so across the corner it travels b*sqrt(2) while
-    rising only b. Its normal is therefore (sx, 2, sz)/sqrt(6), 54.7 degrees up
-    from horizontal. Using (sx, 1, sz)/sqrt(3) instead — the obvious guess, and
-    what this did before — tilts the plate out of the surface, which is what put
-    the little spikes along the crown: one end of the plate ends up above ytop.
+    The ring insets by b on *each* horizontal axis while rising by `rise`, so
+    across the corner the surface travels b*sqrt(2) horizontally. Its normal is
+    therefore proportional to (sx*rise, 2b, sz*rise). At rise == b that reduces
+    to (sx, 2, sz)/sqrt(6) — 54.7 degrees up from horizontal for a 35.26-degree
+    surface. Using (sx, 1, sz)/sqrt(3) instead, the obvious guess, tilts the
+    plate out of the surface so one end finishes above ytop, which is what put
+    the row of little spikes along the crown.
     """
+    rise = b if rise is None else rise
     out = []
-    six = 1.0 / math.sqrt(6.0)
     diag = 1.0 / math.sqrt(2.0)
-    # A true octagonal chamfer narrows as it rises, so the exact patch here is a
-    # trapezoid; a cube cannot be one. Widening past the corner chord and
-    # sliding the plate up-slope trades the notch it would otherwise leave at
-    # the inner rim — right on the crown silhouette — for a shortfall at the
-    # outer rim, where the ring's own corner post is already standing.
-    L = (c + b * 0.35) * R2
-    depth = b * math.sqrt(3.0)      # outer chord to inner chord, along the slope
-    lift = 0.0                 # up-slope, away from the outer rim
+    # Exactly the corner chord — no wider.
+    #
+    # Widening it past the chord looks harmless in a large preview and is not:
+    # the extra length runs along the chord, so both ends push out beyond the
+    # octagon and read as small wings on the crown's top corners. At 30 pixels
+    # on a player's head that is the most visible thing about the helmet.
+    L = c * R2
+    depth = math.sqrt(2 * b * b + rise * rise)   # outer chord to inner chord
     specs = [
         ("fr", 1.0, -1.0),   # +x / -z
         ("fl", -1.0, -1.0),  # -x / -z
@@ -147,7 +159,9 @@ def corner_facets(bone, prefix, x0, x1, z0, z1, ytop, b, t, mat, c):
         ("bl", -1.0, 1.0),   # -x / +z
     ]
     for tag, sx, sz in specs:
-        n = (sx * six, 2.0 * six, sz * six)    # outward and up
+        n = (sx * rise, 2.0 * b, sz * rise)    # outward and up
+        ln = math.sqrt(n[0] ** 2 + n[1] ** 2 + n[2] ** 2)
+        n = (n[0] / ln, n[1] / ln, n[2] / ln)
         u = (-sz * diag, 0.0, sx * diag)       # along the chord
         w = (u[1] * n[2] - u[2] * n[1],        # up-slope
              u[2] * n[0] - u[0] * n[2],
@@ -157,9 +171,9 @@ def corner_facets(bone, prefix, x0, x1, z0, z1, ytop, b, t, mat, c):
         oz = (z1 - c / 2) if sz > 0 else (z0 + c / 2)
         # centre = halfway between the outer chord and the inner one above it,
         # then sunk half a thickness so the outer face lands on the surface
-        cx = ox - sx * b / 2 - n[0] * t / 2 + w[0] * lift
-        cy = ytop - b / 2 - n[1] * t / 2 + w[1] * lift
-        cz = oz - sz * b / 2 - n[2] * t / 2 + w[2] * lift
+        cx = ox - sx * b / 2 - n[0] * t / 2
+        cy = ytop - rise / 2 - n[1] * t / 2
+        cz = oz - sz * b / 2 - n[2] * t / 2
         out.append(_c(bone, f"{prefix}_{tag}",
                       [cx - L / 2, cy - t / 2, cz - depth / 2],
                       [L, t, depth], mat,
@@ -180,7 +194,7 @@ def _oct_ring(bone, prefix, x0, x1, z0, z1, y, h, corner, plate, mat):
 
 def dome(bone, prefix, x0, x1, z0, z1, ybot, ytop, mat,
          corner=1.1, bevel=1.2, plate=1.3, taper=0.45, cap_mat=None,
-         crown_steps=2):
+         crown_steps=2, flare=1.0):
     """A rounded, faceted dome.
 
     Octagonal in plan, tapered inward as it rises, and finished with a
@@ -227,17 +241,28 @@ def dome(bone, prefix, x0, x1, z0, z1, ybot, ytop, mat,
                          z0 + taper, z1 - taper, y_upper, upper_h,
                          up_corner, plate, mat)
 
-    # crown
-    t0, t1 = taper, taper + b1
+    # Crown. `flare` is how far each step draws in per unit it rises: at 1.0 the
+    # chamfers are 45 degrees, above that they draw in faster than they climb.
+    #
+    # That knob exists because the silhouette of a dome is set by how small the
+    # top gets, not by how tall the chamfer is — and a helmet worn high has
+    # almost no height to spend above the skull. At 45 degrees a 1.4-unit crown
+    # only pulls in 1.4, which on a 9-wide shell is a plateau with a bevelled
+    # edge; it looks domed at 400 pixels and flat at 30, which is the size that
+    # matters.
+    i1, i2 = b1 * flare, b2 * flare
+    t0, t1 = taper, taper + i1
     if b1 > 0:
         out += top_chamfers(bone, f"{prefix}_c1", x0 + t0, x1 - t0, z0 + t0, z1 - t0,
-                            y_crown + b1, b1, slab, mat, corner_c=up_corner)
+                            y_crown + b1, i1, slab, mat, corner_c=up_corner,
+                            rise=b1)
+    crown_c = max(0.5, up_corner - i1 * 0.5)
     out += top_chamfers(bone, f"{prefix}_c2", x0 + t1, x1 - t1, z0 + t1, z1 - t1,
-                        ytop, b2, slab, mat, corner_c=max(0.5, up_corner - b1 * 0.5))
+                        ytop, i2, slab, mat, corner_c=crown_c, rise=b2)
     # The flat top. Octagonal like every other slice — a plain box here leaves
     # four square corners standing outside the chamfer ring that caps it.
-    inset = t1 + b2
-    cap_c = max(0.4, up_corner - b1 * 0.5)
+    inset = t1 + i2
+    cap_c = max(0.4, crown_c - i2 * 0.5)
     out += _oct_ring(bone, f"{prefix}_cap", x0 + inset, x1 - inset,
                      z0 + inset, z1 - inset, ytop - b2, b2, cap_c, slab, cap_mat)
     return out

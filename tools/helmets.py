@@ -33,6 +33,13 @@ it all the way round — so the wall runs straight to the top of the head and al
 the rounding lives in the crown above it. `fit_check.py` asserts this at 16
 azimuths; run it after moving anything.
 
+Judge all of this at GAME scale, not preview scale. A helmet is about 30 pixels
+on a player's head; `fit_check.py` renders at 430 for detail, which flatters
+everything. A crown chamfer that reads as a dome at 400 pixels is a plateau at
+30, and a facet poking half a unit past the shell is invisible in a big render
+and the most obvious thing about the helmet in game. `preview/worn_game_scale.png`
+is rendered at the size the game draws — check there before believing anything.
+
 The same 8-cube rules the trim. Anything hung on the shell has to clear the head
 to be drawn at all: side hardware past |x| 4.0, brow and chin work forward of
 z -4.0, seams above the crown it sits on. A detail tucked "under the jaw" is
@@ -45,7 +52,7 @@ from geom import dome, plain, tilted, corner_posts, chinstrap
 # --------------------------------------------------------------- bastion ----
 BASTION = (
     dome("Head", "shell", -4.60, 4.60, -4.60, 4.60, 28.40, 33.40, "shell_black",
-         corner=1.18, bevel=1.40, plate=1.35, taper=0.0)
+         corner=1.18, bevel=1.40, plate=1.35, taper=0.0, flare=1.55)
     + [
         # brow, raked forward so the front edge is not a flat wall
         tilted("Head", "brow", [-4.40, 28.10, -4.95], [8.80, 0.95, 1.35], "shell_black",
@@ -151,7 +158,7 @@ K63 = (
     # runs straight to the top of the head and the two-step crown does all the
     # rounding — see the module docstring for why a taper cannot go below y 32.
     dome("Head", "dome", -4.62, 4.62, -4.62, 4.62, 28.35, 33.20, "olive",
-         corner=1.20, bevel=1.20, plate=1.50, taper=0.0)
+         corner=1.20, bevel=1.20, plate=1.50, taper=0.0, flare=1.70)
     + [
         # raised brow band, proud of the shell all the way round
         plain("Head", "band_x", [-4.84, 28.05, -3.30], [9.68, 0.85, 6.60], "olive_dark"),
@@ -276,7 +283,7 @@ K63 = (
 # ----------------------------------------------------------------- untar ----
 UNTAR = (
     dome("Head", "shell", -4.64, 4.64, -4.64, 4.64, 28.35, 33.40, "un_blue",
-         corner=1.24, bevel=1.40, plate=1.40, taper=0.0)
+         corner=1.24, bevel=1.40, plate=1.40, taper=0.0, flare=1.55)
     + [
         # all-round brim, each edge tipped slightly downward so the rim reads
         # as a curve rather than a shelf
