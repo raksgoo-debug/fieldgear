@@ -51,8 +51,8 @@ from geom import dome, plain, tilted, corner_posts, chinstrap
 
 # --------------------------------------------------------------- bastion ----
 BASTION = (
-    dome("Head", "shell", -4.60, 4.60, -4.60, 4.60, 28.40, 33.40, "shell_black",
-         corner=1.18, bevel=1.40, plate=1.35, taper=0.0, flare=1.55)
+    dome("Head", "shell", -4.66, 4.66, -4.66, 4.66, 28.40, 33.40, "shell_black",
+         corner=1.10, bevel=1.40, plate=1.35, taper=0.0, flare=1.55)
     + [
         # brow, raked forward so the front edge is not a flat wall
         tilted("Head", "brow", [-4.40, 28.10, -4.95], [8.80, 0.95, 1.35], "shell_black",
@@ -65,13 +65,13 @@ BASTION = (
         plain("Head", "nape_pad", [-3.55, 27.20, 3.05], [7.10, 0.95, 1.80], "webbing_dark"),
 
         # --- NVG shroud on the front of the crown
-        tilted("Head", "shroud_base", [-1.95, 30.60, -4.92], [3.90, 2.00, 0.62], "hardware",
+        tilted("Head", "shroud_base", [-1.95, 29.85, -4.98], [3.90, 1.85, 0.62], "hardware",
                rot=[-14, 0, 0]),
-        tilted("Head", "shroud_lug", [-0.80, 31.10, -5.32], [1.60, 1.00, 0.58], "hardware",
+        tilted("Head", "shroud_lug", [-0.80, 30.35, -5.38], [1.60, 0.95, 0.58], "hardware",
                rot=[-14, 0, 0]),
-        tilted("Head", "shroud_wing_r", [-2.85, 30.90, -4.82], [0.95, 1.10, 0.52], "hardware",
+        tilted("Head", "shroud_wing_r", [-2.85, 30.10, -4.88], [0.95, 1.05, 0.52], "hardware",
                rot=[-14, 0, -9]),
-        tilted("Head", "shroud_wing_l", [1.90, 30.90, -4.82], [0.95, 1.10, 0.52], "hardware",
+        tilted("Head", "shroud_wing_l", [1.90, 30.10, -4.88], [0.95, 1.05, 0.52], "hardware",
                rot=[-14, 0, 9]),
 
         # --- ARC rails down each side
@@ -131,7 +131,7 @@ BASTION = (
                rot=[-7, -11, -8]),
 
         # --- crown seam, canted forward with the fall of the crown
-        tilted("Head", "seam", [-0.50, 33.22, -2.70], [1.00, 0.44, 5.40], "hardware",
+        tilted("Head", "seam", [-0.50, 33.06, -1.85], [1.00, 0.40, 3.70], "hardware",
                rot=[6, 0, 0]),
 
         # --- raked peak over the brow
@@ -157,8 +157,8 @@ K63 = (
     # 28.35 so the eyes (about y 28) stay clear, crown down at 33.20. The wall
     # runs straight to the top of the head and the two-step crown does all the
     # rounding — see the module docstring for why a taper cannot go below y 32.
-    dome("Head", "dome", -4.62, 4.62, -4.62, 4.62, 28.35, 33.20, "olive",
-         corner=1.20, bevel=1.20, plate=1.50, taper=0.0, flare=1.70)
+    dome("Head", "dome", -4.68, 4.68, -4.68, 4.68, 28.35, 33.20, "olive",
+         corner=1.12, bevel=1.20, plate=1.50, taper=0.0, flare=1.70)
     + [
         # raised brow band, proud of the shell all the way round
         plain("Head", "band_x", [-4.84, 28.05, -3.30], [9.68, 0.85, 6.60], "olive_dark"),
@@ -190,7 +190,7 @@ K63 = (
                rot=[0, -12, 7]),
 
         # crown seam, tipped forward so it follows the fall of the crown
-        tilted("Head", "seam", [-0.48, 33.02, -2.60], [0.96, 0.44, 5.20], "olive_dark",
+        tilted("Head", "seam", [-0.48, 32.90, -1.75], [0.96, 0.40, 3.50], "olive_dark",
                rot=[5, 0, 0]),
 
         # swept trim along the lower shell, rising toward the back
@@ -282,8 +282,8 @@ K63 = (
 
 # ----------------------------------------------------------------- untar ----
 UNTAR = (
-    dome("Head", "shell", -4.64, 4.64, -4.64, 4.64, 28.35, 33.40, "un_blue",
-         corner=1.24, bevel=1.40, plate=1.40, taper=0.0, flare=1.55)
+    dome("Head", "shell", -4.70, 4.70, -4.70, 4.70, 28.35, 33.40, "un_blue",
+         corner=1.16, bevel=1.40, plate=1.40, taper=0.0, flare=1.55)
     + [
         # all-round brim, each edge tipped slightly downward so the rim reads
         # as a curve rather than a shelf
@@ -311,9 +311,9 @@ UNTAR = (
         # cover seams crossing the crown on opposite Y rotations — the one
         # place on this helmet where the geometry is not axis-aligned, and it
         # does more for the silhouette than anything bolted to the sides
-        tilted("Head", "seam_a", [-0.35, 33.22, -2.60], [0.70, 0.40, 5.20], "un_blue_dark",
+        tilted("Head", "seam_a", [-0.35, 33.10, -1.85], [0.70, 0.38, 3.70], "un_blue_dark",
                rot=[0, 25, 0]),
-        tilted("Head", "seam_b", [-0.35, 33.22, -2.60], [0.70, 0.40, 5.20], "un_blue_dark",
+        tilted("Head", "seam_b", [-0.35, 33.10, -1.85], [0.70, 0.38, 3.70], "un_blue_dark",
                rot=[0, -25, 0]),
 
         # cloth cover ties, tipped up off the shell

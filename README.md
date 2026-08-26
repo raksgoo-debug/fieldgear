@@ -68,8 +68,9 @@ screen in game. Bump it whenever the models change — resources live in the jar
 so editing the repo changes nothing until the jar is rebuilt and reinstalled,
 and a stale jar is otherwise indistinguishable from a fix that did not work.
 
-`1.1.0` is the first build with the corrected crown (no corner wings, flared
-dome). If the Mods screen shows `1.0.0`, the jar predates it.
+`1.2.0` is the first build where the crown corners are actually clean. `1.1.0`
+flared the crown and fixed the corner *facets* but still shipped the wings —
+they came from the cap ring's corner *posts*, which is a different thing.
 
 ## Building
 

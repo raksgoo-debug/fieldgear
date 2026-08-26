@@ -37,16 +37,29 @@ def _c(bone, name, origin, size, mat, rot=None, pivot=None, decal=None):
 
 def corner_posts(bone, prefix, x0, x1, z0, z1, y, h, c, t, mat):
     """Four vertical plates rotated 45 degrees about Y, bridging the corners of
-    an x/z footprint so the cross-section reads as an octagon instead of a box."""
+    an x/z footprint so the cross-section reads as an octagon instead of a box.
+
+    The plate's OUTER face lands on the corner chord; it is not centred on it.
+    Centring leaves half the thickness — here about 0.35 units on the diagonal —
+    standing outside the octagon. On a wide ring that is buried behind the
+    flats and invisible. On the small cap ring at the top of a helmet there is
+    nothing outside it to hide behind, and the four posts read as wedges stuck
+    on the crown's corners. That was the "wings", and it survived two rounds of
+    fixing the corner *facets*, which were never the thing sticking out.
+    """
     out = []
     L = c * R2                       # chord length across the cut corner
+    d = 1.0 / R2
     specs = [
-        ("fr", x1 - c / 2, z0 + c / 2, -45),   # +x / -z
-        ("fl", x0 + c / 2, z0 + c / 2, +45),   # -x / -z
-        ("br", x1 - c / 2, z1 - c / 2, +45),   # +x / +z
-        ("bl", x0 + c / 2, z1 - c / 2, -45),   # -x / +z
+        ("fr", x1 - c / 2, z0 + c / 2, -45, 1.0, -1.0),   # +x / -z
+        ("fl", x0 + c / 2, z0 + c / 2, +45, -1.0, -1.0),  # -x / -z
+        ("br", x1 - c / 2, z1 - c / 2, +45, 1.0, 1.0),    # +x / +z
+        ("bl", x0 + c / 2, z1 - c / 2, -45, -1.0, 1.0),   # -x / +z
     ]
-    for tag, mx, mz, ang in specs:
+    for tag, mx, mz, ang, sx, sz in specs:
+        # step inward along the outward diagonal by half the thickness
+        mx -= sx * d * t / 2
+        mz -= sz * d * t / 2
         out.append(_c(bone, f"{prefix}_post_{tag}",
                       [mx - L / 2, y, mz - t / 2], [L, h, t], mat,
                       rot=[0, ang, 0], pivot=[mx, y, mz]))

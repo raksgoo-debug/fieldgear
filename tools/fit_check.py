@@ -124,13 +124,74 @@ def check_coverage(name, cubes):
     return not bad
 
 
+def corners_of(c):
+    o = np.array(c["origin"], float)
+    s = np.array(c["size"], float)
+    P = np.array([[o[0] + dx * s[0], o[1] + dy * s[1], o[2] + dz * s[2]]
+                  for dx in (0, 1) for dy in (0, 1) for dz in (0, 1)])
+    if c.get("rotation"):
+        piv = np.array(c.get("pivot", [0, 0, 0]), float)
+        P = (rp.cube_matrix(c["rotation"]) @ (P - piv).T).T + piv
+    return P
+
+
+def check_crown(name, cubes, half_width, flare, allow=()):
+    """Nothing may stand outside the profile the crown is drawing.
+
+    Above the top of the head the shell pulls in by `flare` per unit it rises.
+    Anything sitting outside that line is a lump on the crown, and because it is
+    at the silhouette's top corners it is the first thing the eye finds.
+
+    A previous version of this checked against the *wall's* half-width instead,
+    which passes anything inside the widest part of the helmet — so it happily
+    passed four cap-ring corner posts standing 0.35 proud of the crown, which
+    are exactly what shipped and read as wings in game. Check against the
+    profile at each height, not against the widest point.
+    """
+    bad = []
+    for c in cubes:
+        if c.get("_name", "") in allow:
+            continue
+        worst = max((max(abs(x), abs(z)) - (half_width - flare * (y - 32.0))
+                     for x, y, z in corners_of(c) if y > 32.05), default=-9.0)
+        if worst > 0.05:
+            bad.append((round(worst, 2), c.get("_name", "?")))
+    bad.sort(reverse=True)
+    if bad:
+        print(f"  {name}: {len(bad)} cubes OUTSIDE the crown profile — "
+              f"{[f'{n} +{w}' for w, n in bad[:4]]}")
+    else:
+        print(f"  {name}: crown profile clean")
+    return not bad
+
+
 if __name__ == "__main__":
     panels = []
     print("head coverage (y 30.0-32.0, 16 azimuths):")
     covered = True
+    import helmets
+    CROWN = {"bastion": (4.66, 1.55), "k63": (4.68, 1.70), "untar": (4.70, 1.55)}
+    # deliberate proud detail: the NVG shroud stands off the front by design
+    ALLOW = {"shroud_base", "shroud_lug", "shroud_wing_r", "shroud_wing_l"}
     for name in ("bastion", "k63", "untar"):
         geo, tex = rp.load(name)
         covered &= check_coverage(name, rp.collect_cubes(geo, {"Head"}))
+    print("crown profile (nothing standing outside the taper above y 32):")
+    for name in ("bastion", "k63", "untar"):
+        named = []
+        for t in helmets.HELMET_MODELS[name][0]:
+            if t[0] != "Head":
+                continue
+            ex = t[5] if len(t) > 5 else {}
+            c = {"origin": t[2], "size": t[3], "_name": t[1]}
+            if "rot" in ex:
+                c["rotation"] = ex["rot"]
+                c["pivot"] = ex["pivot"]
+            named.append(c)
+        hw, fl = CROWN[name]
+        covered &= check_crown(name, named, hw, fl, allow=ALLOW)
+    for name in ("bastion", "k63", "untar"):
+        geo, tex = rp.load(name)
     for name in ("bastion", "k63", "untar"):
         geo, tex = rp.load(name)
         groups = [(HEAD, flat((196, 160, 130))), (EYELINE, flat((200, 60, 60))),
